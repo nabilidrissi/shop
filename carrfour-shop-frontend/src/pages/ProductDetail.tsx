@@ -1,35 +1,31 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../redux/store/hooks';
-import { fetchProductById, clearCurrentProduct, addToCart } from '../redux/actions';
+import { useAppSelector } from '../redux/store/hooks';
+import { useGetProductByIdQuery, useAddToCartMutation } from '../services/apiSlice';
 import Layout from '../components/shared/Layout';
 import { formatPrice } from '../utils/formatPrice';
+import { showSuccess } from '../utils/toast';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { currentProduct, loading } = useAppSelector((state) => state.products);
+  const { data: currentProduct, isLoading: loading } = useGetProductByIdQuery(Number(id) || 0, {
+    skip: !id,
+  });
   const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const [addToCartMutation] = useAddToCartMutation();
   const [quantity, setQuantity] = useState(1);
 
-  useEffect(() => {
-    if (id) {
-      dispatch(fetchProductById(parseInt(id)));
-    }
-    return () => {
-      dispatch(clearCurrentProduct());
-    };
-  }, []);
-
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!isAuthenticated) {
       navigate('/login');
       return;
     }
     if (currentProduct) {
-      dispatch(addToCart({ productId: currentProduct.id, quantity }));
-      alert('Produit ajouté au panier');
+      try {
+        await addToCartMutation({ productId: currentProduct.id, quantity }).unwrap();
+        showSuccess('Produit ajouté au panier avec succès');
+      } catch (err) {}
     }
   };
 

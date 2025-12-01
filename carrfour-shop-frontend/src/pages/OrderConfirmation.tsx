@@ -1,21 +1,21 @@
 import { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../redux/store/hooks';
-import { fetchOrderById, resetCart } from '../redux/actions';
+import { useGetOrderByIdQuery, useClearCartMutation } from '../services/apiSlice';
 import Layout from '../components/shared/Layout';
 import { formatPrice } from '../utils/formatPrice';
 
 const OrderConfirmation = () => {
   const { id } = useParams<{ id: string }>();
-  const dispatch = useAppDispatch();
-  const { currentOrder, loading } = useAppSelector((state) => state.orders);
+  const { data: currentOrder, isLoading: loading } = useGetOrderByIdQuery(Number(id) || 0, {
+    skip: !id,
+  });
+  const [clearCartMutation] = useClearCartMutation();
 
   useEffect(() => {
     if (id) {
-      dispatch(fetchOrderById(parseInt(id)));
-      dispatch(resetCart());
+      clearCartMutation();
     }
-  }, [id, dispatch]);
+  }, [id, clearCartMutation]);
 
   if (loading) {
     return (

@@ -10,23 +10,3 @@ export interface AuthState {
   error: string | null;
 }
 
-export interface ProductState {
-  products: Product[];
-  currentProduct: Product | null;
-  loading: boolean;
-  error: string | null;
-}
-
-export interface CartState {
-  cart: Cart | null;
-  loading: boolean;
-  error: string | null;
-}
-
-export interface OrderState {
-  orders: Order[];
-  currentOrder: Order | null;
-  loading: boolean;
-  error: string | null;
-}
-

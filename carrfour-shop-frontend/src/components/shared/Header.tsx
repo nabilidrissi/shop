@@ -1,44 +1,48 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../redux/store/hooks';
-import { logoutAsync, fetchCart, resetCart, searchProducts, getCurrentUser, fetchProducts } from '../../redux/actions';
+import {
+  useGetCurrentUserQuery,
+  useLogoutMutation,
+  useGetCartQuery,
+} from '../../services/apiSlice';
+import { clearCredentials } from '../../redux/slices/authSlice';
+import { apiSlice } from '../../services/apiSlice';
 
 const Header = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { isAuthenticated, user, loading: authLoading } = useAppSelector((state) => state.auth);
-  const { cart, loading } = useAppSelector((state) => state.cart);
+  const { isAuthenticated, user } = useAppSelector((state) => state.auth);
   const [searchKeyword, setSearchKeyword] = useState('');
-  const cartItemsCount = useAppSelector(
-    (state) => state.cart.cart?.items.reduce((sum, item) => sum + item.quantity, 0) || 0
-  );
+  const [logoutMutation] = useLogoutMutation();
+  
+  const { data: currentUser } = useGetCurrentUserQuery(undefined, {
+    skip: !isAuthenticated,
+  });
+  const { data: cart } = useGetCartQuery(undefined, {
+    skip: !isAuthenticated,
+  });
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      if (!user && !authLoading) {
-        dispatch(getCurrentUser());
-      }
-      if (!cart && !loading) {
-        dispatch(fetchCart());
-      }
-    } else {
-      dispatch(resetCart());
-    }
-  }, [isAuthenticated, dispatch, user, cart, loading, authLoading]);
+  const displayUser = currentUser || user;
+
+  const cartItemsCount = cart?.items.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
   const handleLogout = async () => {
-    await dispatch(logoutAsync());
-    dispatch(resetCart());
-    navigate('/login');
+    try {
+      await logoutMutation().unwrap();
+    } catch (err) {} finally {
+      dispatch(clearCredentials());
+      dispatch(apiSlice.util.resetApiState());
+      navigate('/login');
+    }
   };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate('/products');
     if (searchKeyword.trim()) {
-      dispatch(searchProducts(searchKeyword));
+      navigate(`/products?search=${encodeURIComponent(searchKeyword.trim())}`);
     } else {
-      dispatch(fetchProducts());
+      navigate('/products');
     }
   };
 
@@ -94,9 +98,9 @@ const Header = () => {
                   </Link>
                 </div>
                 <div className="flex items-center gap-2">
-                  {user?.lastName || user?.firstName ? (
+                  {displayUser?.lastName || displayUser?.firstName ? (
                     <span className="text-gray-700 font-medium">
-                      {[user?.lastName, user?.firstName].filter(Boolean).join(' ')}
+                      {[displayUser?.lastName, displayUser?.firstName].filter(Boolean).join(' ')}
                     </span>
                   ) : null}
                   <button

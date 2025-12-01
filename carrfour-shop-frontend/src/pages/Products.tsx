@@ -1,28 +1,35 @@
-import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../redux/store/hooks';
-import { fetchProducts, addToCart } from '../redux/actions';
+import { Link, useSearchParams } from 'react-router-dom';
+import { useAppSelector } from '../redux/store/hooks';
+import { useGetProductsQuery, useSearchProductsQuery, useAddToCartMutation } from '../services/apiSlice';
 import Layout from '../components/shared/Layout';
 import { formatPrice } from '../utils/formatPrice';
+import { showSuccess, showInfo } from '../utils/toast';
 
 const Products = () => {
-  const dispatch = useAppDispatch();
-  const { products, loading } = useAppSelector((state) => state.products);
+  const [searchParams] = useSearchParams();
+  const searchKeyword = searchParams.get('search') || '';
   const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const [addToCartMutation] = useAddToCartMutation();
+  
+  const { data: searchResults, isLoading: searchLoading } = useSearchProductsQuery(searchKeyword, {
+    skip: !searchKeyword,
+  });
+  const { data: allProducts = [], isLoading: productsLoading } = useGetProductsQuery(undefined, {
+    skip: !!searchKeyword,
+  });
+  
+  const products = searchKeyword ? (searchResults || []) : allProducts;
+  const loading = searchKeyword ? searchLoading : productsLoading;
 
-  useEffect(() => {
-    // Only fetch if not already loading and products array is empty
-    if (!loading && products.length === 0) {
-      dispatch(fetchProducts());
-    }
-  }, [dispatch, loading, products.length]);
-
-  const handleAddToCart = (productId: number) => {
+  const handleAddToCart = async (productId: number) => {
     if (!isAuthenticated) {
-      alert('Veuillez vous connecter pour ajouter des produits au panier');
+      showInfo('Veuillez vous connecter pour ajouter des produits au panier');
       return;
     }
-    dispatch(addToCart({ productId, quantity: 1 }));
+    try {
+      await addToCartMutation({ productId, quantity: 1 }).unwrap();
+      showSuccess('Produit ajouté au panier avec succès');
+    } catch (err) {}
   };
 
   if (loading) {

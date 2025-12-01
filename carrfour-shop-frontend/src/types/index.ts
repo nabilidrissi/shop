@@ -11,8 +11,6 @@ export interface AuthState {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
-  loading: boolean;
-  error: string | null;
 }
 
 export interface Product {
@@ -77,5 +75,11 @@ export interface CreateOrderData {
   billingAddress: string;
   phone: string;
   email: string;
+}
+
+export interface ApiError {
+  code: string;
+  message: string;
+  status: string;
 }
 

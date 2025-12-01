@@ -1,22 +1,35 @@
 import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../redux/store/hooks';
-import { login, clearError } from '../redux/actions';
+import { useAppDispatch } from '../redux/store/hooks';
+import { useLoginMutation } from '../services/apiSlice';
+import { setCredentials } from '../redux/slices/authSlice';
 import Layout from '../components/shared/Layout';
+import { showSuccess, showApiError } from '../utils/toast';
 
 const Login = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const { loading, error } = useAppSelector((state) => state.auth);
+  const [loginMutation, { isLoading: loading, error }] = useLoginMutation();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (location.state?.message) {
+      showSuccess(location.state.message);
       setSuccessMessage(location.state.message);
     }
   }, [location.state]);
+
+  useEffect(() => {
+    if (error) {
+      const apiError = showApiError(error);
+      setErrorMessage(apiError?.message || 'Erreur lors de la connexion');
+    } else {
+      setErrorMessage(null);
+    }
+  }, [error]);
 
   const [formData, setFormData] = useState({
     email: '',
@@ -25,18 +38,19 @@ const Login = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    if (error) dispatch(clearError());
+    if (errorMessage) setErrorMessage(null);
     if (successMessage) setSuccessMessage(null);
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSuccessMessage(null);
-    const result = await dispatch(login(formData));
-    if (login.fulfilled.match(result)) {
-      // Cart will be fetched by Header component when isAuthenticated changes
+    setErrorMessage(null);
+    try {
+      const result = await loginMutation(formData).unwrap();
+      dispatch(setCredentials({ user: result.user, token: result.token }));
       navigate('/products');
-    }
+    } catch (err) {}
   };
 
   return (
@@ -50,9 +64,9 @@ const Login = () => {
           </div>
         )}
 
-        {error && (
+        {errorMessage && (
           <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
-            {error}
+            {errorMessage}
           </div>
         )}
 

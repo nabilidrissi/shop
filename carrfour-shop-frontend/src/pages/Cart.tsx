@@ -1,30 +1,30 @@
-import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../redux/store/hooks';
-import { fetchCart, updateCartItem, removeFromCart } from '../redux/actions';
+import { useAppSelector } from '../redux/store/hooks';
+import { useGetCartQuery, useUpdateCartItemMutation, useRemoveFromCartMutation } from '../services/apiSlice';
 import Layout from '../components/shared/Layout';
 import { formatPrice } from '../utils/formatPrice';
 
 const Cart = () => {
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { cart, loading } = useAppSelector((state) => state.cart);
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { data: cart, isLoading: loading } = useGetCartQuery(undefined, {
+    skip: !isAuthenticated,
+  });
+  const [updateCartItemMutation] = useUpdateCartItemMutation();
+  const [removeFromCartMutation] = useRemoveFromCartMutation();
 
-  useEffect(() => {
-    // Only fetch cart if it's not already loaded and not currently loading
-    if (!cart && !loading) {
-      dispatch(fetchCart());
-    }
-  }, [dispatch, cart, loading]);
-
-  const handleQuantityChange = (itemId: number, newQuantity: number) => {
+  const handleQuantityChange = async (itemId: number, newQuantity: number) => {
     if (newQuantity < 1) return;
-    dispatch(updateCartItem({ itemId, quantity: newQuantity }));
+    try {
+      await updateCartItemMutation({ itemId, quantity: newQuantity }).unwrap();
+    } catch (err) {}
   };
 
-  const handleRemove = (itemId: number) => {
+  const handleRemove = async (itemId: number) => {
     if (window.confirm('Voulez-vous retirer cet article du panier?')) {
-      dispatch(removeFromCart(itemId));
+      try {
+        await removeFromCartMutation(itemId).unwrap();
+      } catch (err) {}
     }
   };
 

@@ -1,14 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../redux/store/hooks';
-import { register, clearError } from '../redux/actions';
+import { useRegisterMutation } from '../services/apiSlice';
 import Layout from '../components/shared/Layout';
+import { showSuccess, showApiError } from '../utils/toast';
 
 const Register = () => {
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { loading, error } = useAppSelector((state) => state.auth);
+  const [registerMutation, { isLoading: loading, error }] = useRegisterMutation();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (error) {
+      const apiError = showApiError(error);
+      setErrorMessage(apiError?.message || 'Erreur lors de l\'inscription');
+    } else {
+      setErrorMessage(null);
+    }
+  }, [error]);
 
   const [formData, setFormData] = useState({
     password: '',
@@ -20,17 +29,17 @@ const Register = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    if (error) dispatch(clearError());
+    if (errorMessage) setErrorMessage(null);
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const result = await dispatch(register(formData));
-    if (register.fulfilled.match(result)) {
-      navigate('/login', {
-        state: { message: 'Inscription réussie! Vous pouvez maintenant vous connecter.' }
-      });
-    }
+    setErrorMessage(null);
+    try {
+      await registerMutation(formData).unwrap();
+      showSuccess('Inscription réussie! Vous pouvez maintenant vous connecter.');
+      navigate('/login');
+    } catch (err) {}
   };
 
   return (
@@ -38,9 +47,9 @@ const Register = () => {
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-8">
         <h2 className="text-2xl font-bold text-center mb-6">Créer un compte</h2>
 
-        {error && (
+        {errorMessage && (
           <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
-            {error}
+            {errorMessage}
           </div>
         )}
 

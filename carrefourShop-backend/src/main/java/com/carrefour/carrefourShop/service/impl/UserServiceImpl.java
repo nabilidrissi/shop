@@ -5,6 +5,8 @@ import com.carrefour.carrefourShop.dto.AuthResponse;
 import com.carrefour.carrefourShop.dto.RegisterRequest;
 import com.carrefour.carrefourShop.dto.UserDto;
 import com.carrefour.carrefourShop.entity.User;
+import com.carrefour.carrefourShop.exception.BusinessException;
+import com.carrefour.carrefourShop.exception.ExceptionConstants;
 import com.carrefour.carrefourShop.exception.ResourceNotFoundException;
 import com.carrefour.carrefourShop.exception.UnauthorizedException;
 import com.carrefour.carrefourShop.mapper.UserMapper;
@@ -32,7 +34,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserDto register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email already exists");
+            throw new BusinessException(ExceptionConstants.EMAIL_ALREADY_EXISTS, ExceptionConstants.getMessage(ExceptionConstants.EMAIL_ALREADY_EXISTS));
         }
 
         User user = User.builder()
@@ -54,9 +56,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public AuthResponse authenticate(AuthRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
+                .orElseThrow(() -> new UnauthorizedException(ExceptionConstants.INVALID_EMAIL_OR_PASSWORD, ExceptionConstants.getMessage(ExceptionConstants.INVALID_EMAIL_OR_PASSWORD)));
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new UnauthorizedException("Invalid email or password");
+            throw new UnauthorizedException(ExceptionConstants.INVALID_EMAIL_OR_PASSWORD, ExceptionConstants.getMessage(ExceptionConstants.INVALID_EMAIL_OR_PASSWORD));
         }
 
         UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
@@ -79,14 +81,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto getCurrentUser(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(ExceptionConstants.USER_NOT_FOUND, ExceptionConstants.getMessage(ExceptionConstants.USER_NOT_FOUND)));
         return userMapper.toDto(user);
     }
 
     @Override
     public User getUserById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(ExceptionConstants.USER_NOT_FOUND, ExceptionConstants.getMessage(ExceptionConstants.USER_NOT_FOUND)));
     }
 
     @Override

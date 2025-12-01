@@ -1,20 +1,14 @@
-import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../redux/store/hooks';
-import { fetchUserOrders } from '../redux/actions';
+import { useAppSelector } from '../redux/store/hooks';
+import { useGetUserOrdersQuery } from '../services/apiSlice';
 import Layout from '../components/shared/Layout';
 import { formatPrice } from '../utils/formatPrice';
 
 const OrdersList = () => {
-  const dispatch = useAppDispatch();
-  const { orders, loading } = useAppSelector((state) => state.orders);
-
-  useEffect(() => {
-    // Only fetch if not already loading and orders array is empty
-    if (!loading && orders.length === 0) {
-      dispatch(fetchUserOrders());
-    }
-  }, [dispatch, loading, orders.length]);
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { data: orders = [], isLoading: loading } = useGetUserOrdersQuery(undefined, {
+    skip: !isAuthenticated,
+  });
 
   const getStatusText = (status: string) => {
     const statusMap: Record<string, string> = {

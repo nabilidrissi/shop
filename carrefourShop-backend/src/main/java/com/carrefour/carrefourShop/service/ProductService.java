@@ -1,13 +1,12 @@
 package com.carrefour.carrefourShop.service;
 
 import com.carrefour.carrefourShop.dto.ProductDto;
-
-import java.util.List;
+import reactor.core.publisher.Flux;
 
 public interface ProductService {
-    List<ProductDto> getAllProducts();
-    List<ProductDto> getProductsByCategory(String category);
-    List<ProductDto> searchProducts(String keyword);
+    Flux<ProductDto> getAllProducts();
+    Flux<ProductDto> getProductsByCategory(String category);
+    Flux<ProductDto> searchProducts(String keyword);
     ProductDto getProductById(Long id);
 }
 

@@ -3,6 +3,8 @@ package com.carrefour.carrefourShop.service.impl;
 import com.carrefour.carrefourShop.dto.CreateOrderRequest;
 import com.carrefour.carrefourShop.dto.OrderDto;
 import com.carrefour.carrefourShop.entity.*;
+import com.carrefour.carrefourShop.exception.BusinessException;
+import com.carrefour.carrefourShop.exception.ExceptionConstants;
 import com.carrefour.carrefourShop.exception.ResourceNotFoundException;
 import com.carrefour.carrefourShop.mapper.OrderMapper;
 import com.carrefour.carrefourShop.repository.*;
@@ -32,10 +34,10 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderDto createOrder(Long userId, CreateOrderRequest request) {
         Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cart is empty"));
+                .orElseThrow(() -> new ResourceNotFoundException(ExceptionConstants.CART_IS_EMPTY, ExceptionConstants.getMessage(ExceptionConstants.CART_IS_EMPTY)));
 
         if (cart.getItems().isEmpty()) {
-            throw new IllegalArgumentException("Cannot create order with empty cart");
+            throw new BusinessException(ExceptionConstants.CANNOT_CREATE_ORDER_WITH_EMPTY_CART, ExceptionConstants.getMessage(ExceptionConstants.CANNOT_CREATE_ORDER_WITH_EMPTY_CART));
         }
 
         User user = User.builder().id(userId).build();
@@ -55,11 +57,11 @@ public class OrderServiceImpl implements OrderService {
             Product product = cartItem.getProduct();
 
             if (!product.getActive()) {
-                throw new IllegalArgumentException("Product " + product.getName() + " is no longer available");
+                throw new BusinessException(ExceptionConstants.PRODUCT_NO_LONGER_AVAILABLE, ExceptionConstants.getMessage(ExceptionConstants.PRODUCT_NO_LONGER_AVAILABLE, product.getName()));
             }
 
             if (product.getStock() != null && product.getStock() < cartItem.getQuantity()) {
-                throw new IllegalArgumentException("Insufficient stock for product " + product.getName());
+                throw new BusinessException(ExceptionConstants.INSUFFICIENT_STOCK_FOR_PRODUCT, ExceptionConstants.getMessage(ExceptionConstants.INSUFFICIENT_STOCK_FOR_PRODUCT, product.getName()));
             }
 
             BigDecimal itemTotal = product.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity()));
@@ -87,12 +89,12 @@ public class OrderServiceImpl implements OrderService {
         cartItemRepository.deleteByCartId(cart.getId());
         
         cart = cartRepository.findById(cart.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(ExceptionConstants.CART_NOT_FOUND, ExceptionConstants.getMessage(ExceptionConstants.CART_NOT_FOUND)));
         
         cart.getItems().clear();
         
         User userEntity = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(ExceptionConstants.USER_NOT_FOUND, ExceptionConstants.getMessage(ExceptionConstants.USER_NOT_FOUND)));
         userEntity.setCart(null);
         userRepository.save(userEntity);
         
@@ -111,10 +113,10 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDto getOrderById(Long orderId, Long userId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(ExceptionConstants.ORDER_NOT_FOUND, ExceptionConstants.getMessage(ExceptionConstants.ORDER_NOT_FOUND)));
 
         if (!order.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("Order does not belong to user");
+            throw new BusinessException(ExceptionConstants.ORDER_DOES_NOT_BELONG_TO_USER, ExceptionConstants.getMessage(ExceptionConstants.ORDER_DOES_NOT_BELONG_TO_USER));
         }
 
         return orderMapper.toDto(order);
@@ -124,14 +126,14 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderDto updateOrderStatus(Long orderId, String status) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(ExceptionConstants.ORDER_NOT_FOUND, ExceptionConstants.getMessage(ExceptionConstants.ORDER_NOT_FOUND)));
 
         try {
             order.setStatus(Order.OrderStatus.valueOf(status.toUpperCase()));
             order = orderRepository.save(order);
             return orderMapper.toDto(order);
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid order status: " + status);
+            throw new BusinessException(ExceptionConstants.INVALID_ORDER_STATUS, ExceptionConstants.getMessage(ExceptionConstants.INVALID_ORDER_STATUS, status));
         }
     }
 }

@@ -1,17 +1,35 @@
 import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../redux/store/hooks';
-import { fetchCart, createOrder } from '../redux/actions';
+import { useAppSelector } from '../redux/store/hooks';
+import { useGetCartQuery, useCreateOrderMutation } from '../services/apiSlice';
 import Layout from '../components/shared/Layout';
 import { formatPrice } from '../utils/formatPrice';
+import { showApiError } from '../utils/toast';
 
 const Order = () => {
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { cart, loading: cartLoading } = useAppSelector((state) => state.cart);
-  const { user } = useAppSelector((state) => state.auth);
-  const { loading, error } = useAppSelector((state) => state.orders);
+  const { isAuthenticated, user } = useAppSelector((state) => state.auth);
+  const { data: cart, isLoading: cartLoading } = useGetCartQuery(undefined, {
+    skip: !isAuthenticated,
+  });
+  const [createOrderMutation, { isLoading: loading, error }] = useCreateOrderMutation();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (error) {
+      const apiError = showApiError(error);
+      setErrorMessage(apiError?.message || 'Erreur lors de la création de la commande');
+    } else {
+      setErrorMessage(null);
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (cart && cart.items.length === 0) {
+      navigate('/cart');
+    }
+  }, [cart, navigate]);
 
   const [formData, setFormData] = useState({
     shippingAddress: '',
@@ -20,32 +38,18 @@ const Order = () => {
     email: user?.email || '',
   });
 
-  useEffect(() => {
-    // Only fetch if cart is not loaded yet and not currently loading
-    if (!cart && !cartLoading) {
-      dispatch(fetchCart()).then((result) => {
-        if (fetchCart.fulfilled.match(result)) {
-          if (!result.payload || result.payload.items.length === 0) {
-            navigate('/cart');
-          }
-        }
-      });
-    } else if (cart && cart.items.length === 0) {
-      // If cart is loaded but empty, redirect immediately
-      navigate('/cart');
-    }
-  }, [dispatch, navigate, cart, cartLoading]);
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (errorMessage) setErrorMessage(null);
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const result = await dispatch(createOrder(formData));
-    if (createOrder.fulfilled.match(result)) {
-      navigate(`/order-confirmation/${result.payload.id}`);
-    }
+    setErrorMessage(null);
+    try {
+      const result = await createOrderMutation(formData).unwrap();
+      navigate(`/order-confirmation/${result.id}`);
+    } catch (err) {}
   };
 
   if (!cart || cart.items.length === 0) {
@@ -56,9 +60,9 @@ const Order = () => {
     <Layout>
       <h2 className="text-2xl font-bold mb-6">Finaliser la commande</h2>
 
-      {error && (
+      {errorMessage && (
         <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
-          {error}
+          {errorMessage}
         </div>
       )}
 

@@ -4,6 +4,7 @@ import com.carrefour.carrefourShop.entity.Product;
 import com.carrefour.carrefourShop.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
+@Profile("!test")
 public class DataInitializer implements CommandLineRunner {
 
     private final ProductRepository productRepository;
@@ -32,7 +34,7 @@ public class DataInitializer implements CommandLineRunner {
                         .stock(100)
                         .category("Dairy")
                         .brand("Carrefour")
-                        .imageUrl("https://via.placeholder.com/300")
+                        .imageUrl("https://cdn.le-guide.ma/wp-content/uploads/2021/11/Carrefour-France.png")
                         .active(true)
                         .build(),
                 Product.builder()
@@ -42,7 +44,7 @@ public class DataInitializer implements CommandLineRunner {
                         .stock(50)
                         .category("Bakery")
                         .brand("Carrefour")
-                        .imageUrl("https://via.placeholder.com/300")
+                        .imageUrl("https://cdn.le-guide.ma/wp-content/uploads/2021/11/Carrefour-France.png")
                         .active(true)
                         .build(),
                 Product.builder()
@@ -52,7 +54,7 @@ public class DataInitializer implements CommandLineRunner {
                         .stock(75)
                         .category("Fruits")
                         .brand("Carrefour")
-                        .imageUrl("https://via.placeholder.com/300")
+                        .imageUrl("https://cdn.le-guide.ma/wp-content/uploads/2021/11/Carrefour-France.png")
                         .active(true)
                         .build(),
                 Product.builder()
@@ -62,7 +64,7 @@ public class DataInitializer implements CommandLineRunner {
                         .stock(60)
                         .category("Dairy")
                         .brand("Carrefour Bio")
-                        .imageUrl("https://via.placeholder.com/300")
+                        .imageUrl("https://cdn.le-guide.ma/wp-content/uploads/2021/11/Carrefour-France.png")
                         .active(true)
                         .build(),
                 Product.builder()
@@ -72,7 +74,7 @@ public class DataInitializer implements CommandLineRunner {
                         .stock(120)
                         .category("Pasta")
                         .brand("Carrefour")
-                        .imageUrl("https://via.placeholder.com/300")
+                        .imageUrl("https://cdn.le-guide.ma/wp-content/uploads/2021/11/Carrefour-France.png")
                         .active(true)
                         .build(),
                 Product.builder()
@@ -82,7 +84,7 @@ public class DataInitializer implements CommandLineRunner {
                         .stock(80)
                         .category("Sauces")
                         .brand("Carrefour")
-                        .imageUrl("https://via.placeholder.com/300")
+                        .imageUrl("https://cdn.le-guide.ma/wp-content/uploads/2021/11/Carrefour-France.png")
                         .active(true)
                         .build(),
                 Product.builder()
@@ -92,7 +94,7 @@ public class DataInitializer implements CommandLineRunner {
                         .stock(20)
                         .category("Meat")
                         .brand("Carrefour")
-                        .imageUrl("https://via.placeholder.com/300")
+                        .imageUrl("https://cdn.le-guide.ma/wp-content/uploads/2021/11/Carrefour-France.png")
                         .active(true)
                         .build(),
                 Product.builder()
@@ -102,7 +104,7 @@ public class DataInitializer implements CommandLineRunner {
                         .stock(15)
                         .category("Fish")
                         .brand("Carrefour")
-                        .imageUrl("https://via.placeholder.com/300")
+                        .imageUrl("https://cdn.le-guide.ma/wp-content/uploads/2021/11/Carrefour-France.png")
                         .active(true)
                         .build(),
                 Product.builder()
@@ -112,7 +114,7 @@ public class DataInitializer implements CommandLineRunner {
                         .stock(90)
                         .category("Rice")
                         .brand("Carrefour")
-                        .imageUrl("https://via.placeholder.com/300")
+                        .imageUrl("https://cdn.le-guide.ma/wp-content/uploads/2021/11/Carrefour-France.png")
                         .active(true)
                         .build(),
                 Product.builder()
@@ -122,7 +124,7 @@ public class DataInitializer implements CommandLineRunner {
                         .stock(40)
                         .category("Oils")
                         .brand("Carrefour")
-                        .imageUrl("https://via.placeholder.com/300")
+                        .imageUrl("https://cdn.le-guide.ma/wp-content/uploads/2021/11/Carrefour-France.png")
                         .active(true)
                         .build(),
                 Product.builder()
@@ -132,7 +134,7 @@ public class DataInitializer implements CommandLineRunner {
                         .stock(100)
                         .category("Beverages")
                         .brand("Carrefour")
-                        .imageUrl("https://via.placeholder.com/300")
+                        .imageUrl("https://cdn.le-guide.ma/wp-content/uploads/2021/11/Carrefour-France.png")
                         .active(true)
                         .build(),
                 Product.builder()
@@ -142,7 +144,7 @@ public class DataInitializer implements CommandLineRunner {
                         .stock(55)
                         .category("Beverages")
                         .brand("Carrefour")
-                        .imageUrl("https://via.placeholder.com/300")
+                        .imageUrl("https://cdn.le-guide.ma/wp-content/uploads/2021/11/Carrefour-France.png")
                         .active(true)
                         .build(),
                 Product.builder()
@@ -152,7 +154,7 @@ public class DataInitializer implements CommandLineRunner {
                         .stock(70)
                         .category("Sweets")
                         .brand("Carrefour")
-                        .imageUrl("https://via.placeholder.com/300")
+                        .imageUrl("https://cdn.le-guide.ma/wp-content/uploads/2021/11/Carrefour-France.png")
                         .active(true)
                         .build(),
                 Product.builder()
@@ -162,7 +164,7 @@ public class DataInitializer implements CommandLineRunner {
                         .stock(35)
                         .category("Dairy")
                         .brand("Carrefour")
-                        .imageUrl("https://via.placeholder.com/300")
+                        .imageUrl("https://cdn.le-guide.ma/wp-content/uploads/2021/11/Carrefour-France.png")
                         .active(true)
                         .build(),
                 Product.builder()
@@ -172,7 +174,7 @@ public class DataInitializer implements CommandLineRunner {
                         .stock(65)
                         .category("Beverages")
                         .brand("Carrefour")
-                        .imageUrl("https://via.placeholder.com/300")
+                        .imageUrl("https://cdn.le-guide.ma/wp-content/uploads/2021/11/Carrefour-France.png")
                         .active(true)
                         .build()
         );

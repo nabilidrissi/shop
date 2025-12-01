@@ -1,10 +1,10 @@
 package com.carrefour.carrefourShop.exception;
 
-public class ResourceNotFoundException extends RuntimeException {
+public class BusinessException extends RuntimeException {
     private final String code;
     private final String message;
 
-    public ResourceNotFoundException(String code, String message) {
+    public BusinessException(String code, String message) {
         super(message);
         this.code = code;
         this.message = message;
